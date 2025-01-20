@@ -3,18 +3,17 @@
  * @Date: 2024-11-11 16:06:58
  * @LastEditors: kamalyes 501893067@qq.com
  * @LastEditTime: 2024-11-17 23:05:55
- * @FilePath: \gosh\tests\reponse_test.go
+ * @FilePath: \gosh\reponse_test.go
  * @Description:
  *
  * Copyright (c) 2024 by kamalyes, All Rights Reserved.
  */
-package tests
+package gosh
 
 import (
 	"net/http"
 	"testing"
 
-	"github.com/kamalyes/gosh"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -44,44 +43,44 @@ func (m *MockResponseWriter) WriteHeader(statusCode int) {
 }
 
 // setupContext 创建一个模拟的上下文
-func setupContext() *gosh.Context {
-	return &gosh.Context{
+func setupContext() *Context {
+	return &Context{
 		ResponseWriter: &MockResponseWriter{}, // HTTP 响应写入器
 	}
 }
 
 // assertResponseOption 检查 ResponseOption 的字段
-func assertResponseOption(t *testing.T, resp *gosh.ResponseOption, expectedData interface{}, expectedCode gosh.SceneCode, expectedHttpCode gosh.StatusCode, expectedMessage string) {
+func assertResponseOption(t *testing.T, resp *ResponseOption, expectedData interface{}, expectedCode SceneCode, expectedHttpCode StatusCode, expectedMessage string) {
 	assert.Equal(t, expectedData, resp.Data)
 	assert.Equal(t, expectedCode, resp.SceneCode)
 	assert.Equal(t, expectedHttpCode, resp.HttpCode)
 	assert.Equal(t, expectedMessage, resp.Message)
 }
 
-// TestNewResponseOption 测试 gosh.NewResponseOption 函数
+// TestNewResponseOption 测试 NewResponseOption 函数
 func TestNewResponseOption(t *testing.T) {
-	resp := gosh.NewResponseOption(testData, gosh.Fail, gosh.StatusOK, successMessage)
-	assertResponseOption(t, resp, testData, gosh.Fail, gosh.StatusOK, successMessage)
+	resp := NewResponseOption(testData, Fail, StatusOK, successMessage)
+	assertResponseOption(t, resp, testData, Fail, StatusOK, successMessage)
 }
 
 // TestResponseOptionMerge 测试 merge 方法
 func TestResponseOptionMerge(t *testing.T) {
-	resp := &gosh.ResponseOption{
+	resp := &ResponseOption{
 		SceneCode: 0,
 		HttpCode:  0,
 		Message:   "",
 	}
 
 	mergedResp := resp.Merge()
-	assertResponseOption(t, mergedResp, nil, gosh.Success, gosh.Success, gosh.GetSceneCodeText(gosh.Success))
+	assertResponseOption(t, mergedResp, nil, Success, Success, GetSceneCodeText(Success))
 }
 
 // TestSendJSONResponse 测试 SendJSONResponse 函数
 func TestSendJSONResponse(t *testing.T) {
 	ctx := setupContext()
 
-	respOption := gosh.NewResponseOption(testData, gosh.Success, gosh.StatusOK, successMessage)
-	err := gosh.SendJSONResponse(ctx, respOption)
+	respOption := NewResponseOption(testData, Success, StatusOK, successMessage)
+	err := SendJSONResponse(ctx, respOption)
 	assert.NoError(t, err)
 }
 
@@ -89,18 +88,18 @@ func TestSendJSONResponse(t *testing.T) {
 func TestGen400xResponse(t *testing.T) {
 	ctx := setupContext()
 
-	respOption := gosh.NewResponseOption(nil)
-	gosh.Gen400xResponse(ctx, respOption)
-	assertResponseOption(t, respOption, nil, gosh.BadRequest, gosh.StatusBadRequest, gosh.GetSceneCodeText(gosh.BadRequest))
+	respOption := NewResponseOption(nil)
+	Gen400xResponse(ctx, respOption)
+	assertResponseOption(t, respOption, nil, BadRequest, StatusBadRequest, GetSceneCodeText(BadRequest))
 }
 
 // TestGen500xResponse 测试 Gen500xResponse 函数
 func TestGen500xResponse(t *testing.T) {
 	ctx := setupContext()
 
-	respOption := gosh.NewResponseOption(nil)
-	gosh.Gen500xResponse(ctx, respOption)
-	assertResponseOption(t, respOption, nil, gosh.Fail, gosh.StatusInternalServerError, gosh.GetSceneCodeText(gosh.Fail))
+	respOption := NewResponseOption(nil)
+	Gen500xResponse(ctx, respOption)
+	assertResponseOption(t, respOption, nil, Fail, StatusInternalServerError, GetSceneCodeText(Fail))
 }
 
 // TestRemoveTopStruct 测试 removeTopStruct 函数
@@ -110,7 +109,7 @@ func TestRemoveTopStruct(t *testing.T) {
 		"User   .Email": "Email is required",
 	}
 
-	result := gosh.RemoveTopStruct(fields)
+	result := RemoveTopStruct(fields)
 
 	assert.Equal(t, 2, len(result))
 	assert.Equal(t, "Name is required", result["Name"])

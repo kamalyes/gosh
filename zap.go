@@ -2,7 +2,7 @@
  * @Author: kamalyes 501893067@qq.com
  * @Date: 2023-07-28 00:50:58
  * @LastEditors: kamalyes 501893067@qq.com
- * @LastEditTime: 2024-11-17 13:19:55
+ * @LastEditTime: 2025-01-20 10:28:52
  * @FilePath: \gosh\zap.go
  * @Description:
  *
@@ -64,6 +64,7 @@ func DefaultKmZipConfig() kmZap.Zap {
 		MaxAge:        30,                             // 默认最大保留天数
 		Compress:      false,                          // 默认不压缩
 		LogInConsole:  true,                           // 默认输出到控制台
+		Development:   true,
 	}
 }
 
@@ -84,20 +85,28 @@ func NewLogger(ctx Context, kmZap kmZap.Zap) (*Logger, error) {
 		getEncoderCore(ctx, zap.WarnLevel, kmZap),  // 警告级别
 		getEncoderCore(ctx, zap.ErrorLevel, kmZap), // 错误级别
 	}
-
 	// 使用 zapcore.NewTee 创建一个多核心的 logger
-	logger := zap.New(zapcore.NewTee(cores...), zap.AddCaller())
+	logger := zap.New(zapcore.NewTee(cores...))
 
 	// 如果需要显示行号，则添加调用者信息
 	if kmZap.ShowLine {
-		logger = logger.WithOptions(zap.AddCaller())
+		// 开启文件及行号
+		caller := zap.AddCaller()
+		logger = logger.WithOptions(caller)
+	}
+
+	// 如果需要开发者模式
+	if kmZap.Development {
+		// 开启开发模式，堆栈跟踪
+		development := zap.Development()
+		logger = logger.WithOptions(development)
 	}
 
 	// 返回 Logger 实例
 	return &Logger{
 		Logger:        logger,
 		kmZap:         kmZap,
-		requestIDKey:  constants.LogRequestIDKey,
+		requestIDKey:  constants.TraceIdKey,
 		timeKey:       constants.LogTimeKey,
 		errorKey:      constants.LogErrorKey,
 		requestKey:    constants.LogRequestKey,
@@ -108,15 +117,19 @@ func NewLogger(ctx Context, kmZap kmZap.Zap) (*Logger, error) {
 // getEncoderConfig 获取编码器配置
 func getEncoderConfig(kmZap kmZap.Zap) zapcore.EncoderConfig {
 	config := zapcore.EncoderConfig{
-		MessageKey:    "message",                 // 消息键
-		LevelKey:      "level",                   // 级别键
-		TimeKey:       "time",                    // 时间键
-		NameKey:       "logger",                  // 日志器名称键
-		CallerKey:     "caller",                  // 调用者键
-		StacktraceKey: kmZap.StacktraceKey,       // 堆栈跟踪键
-		LineEnding:    zapcore.DefaultLineEnding, // 行结束符
-		EncodeTime:    customTimeEncoder,         // 自定义时间编码器
-		EncodeCaller:  zapcore.FullCallerEncoder, // 完整调用者编码器
+		MessageKey:     "message", // 消息键
+		LevelKey:       "level",   // 级别键
+		TimeKey:        "time",    // 时间键
+		NameKey:        "logger",  // 日志器名称键
+		CallerKey:      "caller",  // 调用者键
+		FunctionKey:    "function",
+		SkipLineEnding: false,
+		StacktraceKey:  kmZap.StacktraceKey,        // 堆栈跟踪键
+		LineEnding:     zapcore.DefaultLineEnding,  // 行结束符
+		EncodeTime:     zapcore.ISO8601TimeEncoder, // ISO8601 UTC 时间格式
+		EncodeCaller:   zapcore.ShortCallerEncoder, // 短路径编码器(相对路径+行号)
+		EncodeDuration: zapcore.MillisDurationEncoder,
+		EncodeName:     zapcore.FullNameEncoder,
 	}
 
 	// 根据配置选择编码级别
@@ -151,11 +164,6 @@ func getEncoderCore(ctx Context, level zapcore.Level, kmZap kmZap.Zap) zapcore.C
 	logFilePath := filepath.Join(kmZap.Director, fmt.Sprintf("%s-%s.log", ctx.Engine.Config.AppName, level.String()))
 	writer := WriteSyncer(logFilePath, kmZap)                // 使用 WriteSyncer 创建写入器
 	return zapcore.NewCore(getEncoder(kmZap), writer, level) // 创建并返回核心
-}
-
-// customTimeEncoder 自定义时间编码器
-func customTimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
-	enc.AppendString(t.Format(time.RFC3339)) // 使用 RFC3339 格式化时间
 }
 
 // LogError 记录错误信息并返回 Logger 以支持链式调用

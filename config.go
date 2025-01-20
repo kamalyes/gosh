@@ -2,7 +2,7 @@
  * @Author: kamalyes 501893067@qq.com
  * @Date: 2024-11-11 08:59:07
  * @LastEditors: kamalyes 501893067@qq.com
- * @LastEditTime: 2024-11-17 23:34:42
+ * @LastEditTime: 2025-01-20 17:56:01
  * @FilePath: \gosh\config.go
  * @Description:
  *
@@ -19,7 +19,7 @@ func setDefaultConfig() Config {
 	config := Config{
 		MaxMultipartMemory:     defaultMaxMultipartMemory,
 		HandleMethodNotAllowed: false,
-		AppBanner:              DefaultBannerConfig(),
+		AppBanner:              NewBannerConfig(),
 		KmSingleConfig: &goconfig.SingleConfig{
 			Zap: DefaultKmZipConfig(),
 		},
@@ -52,21 +52,23 @@ func mergeDefaultConfig(defaultConfig, customConfig Config) Config {
 		defaultConfig.AfterHandler = customConfig.AfterHandler
 	}
 
+	defaultBannerConfig := NewBannerConfig()
+
 	if customConfig.AppBanner == nil {
-		defaultConfig.AppBanner = DefaultBannerConfig()
+		defaultConfig.AppBanner = defaultBannerConfig
 	}
 
 	if customConfig.AppBanner != nil {
-		if customConfig.AppBanner.Banner == "" {
-			defaultConfig.AppBanner.Banner = DefaultBannerConfig().Banner
+		if customConfig.AppBanner.banner == "" {
+			defaultConfig.AppBanner.SetBanner(defaultBannerConfig.GetBanner())
 		}
 
-		if customConfig.AppBanner.Subtitle == "" {
-			defaultConfig.AppBanner.Subtitle = DefaultBannerConfig().Subtitle
+		if customConfig.AppBanner.subtitle == "" {
+			defaultConfig.AppBanner.SetSubtitle(defaultBannerConfig.GetSubtitle())
 		}
 
-		if customConfig.AppBanner.Title == "" {
-			defaultConfig.AppBanner.Title = DefaultBannerConfig().Title
+		if customConfig.AppBanner.title == "" {
+			defaultConfig.AppBanner.SetTitle(defaultBannerConfig.GetTitle())
 		}
 	}
 

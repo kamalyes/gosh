@@ -98,7 +98,7 @@ func NewEngine(config ...Config) *Engine {
 // Run 启动HTTP服务
 func (engine *Engine) Run(addr ...string) error {
 	resolveAddress := resolveAddress(addr)
-	PrintBanner(*engine.Config.AppBanner)
+	engine.Config.AppBanner.Print()
 	log.Printf("Starting server at %s", resolveAddress)
 	return http.ListenAndServe(resolveAddress, engine)
 }

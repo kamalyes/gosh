@@ -3,10 +3,10 @@
  * @Date: 2024-11-16 17:30:00
  * @LastEditors: kamalyes 501893067@qq.com
  * @LastEditTime: 2024-11-17 13:25:06
- * @FilePath: \gosh\tests\zap_bench_test.go
+ * @FilePath: \gosh\zap_bench_test.go
  * @Description: 测试 Zap 性能
  */
-package tests
+package gosh
 
 import (
 	"errors"

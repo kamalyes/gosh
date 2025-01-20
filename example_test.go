@@ -3,12 +3,12 @@
  * @Date: 2024-11-11 18:56:57
  * @LastEditors: kamalyes 501893067@qq.com
  * @LastEditTime: 2024-11-17 23:55:56
- * @FilePath: \gosh\tests\example_test.go
+ * @FilePath: \gosh\example_test.go
  * @Description:
  *
  * Copyright (c) 2024 by kamalyes, All Rights Reserved.
  */
-package tests
+package gosh
 
 import (
 	"context"
@@ -18,12 +18,10 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/kamalyes/gosh"
 )
 
 // 错误回调处理器
-func errorHandler(ctx *gosh.Context) {
+func errorHandler(ctx *Context) {
 	// 记录错误日志
 	log.Println("记录错误日志", ctx.Status, ctx.Error)
 	// 输出错误信息到客户端
@@ -34,14 +32,14 @@ func errorHandler(ctx *gosh.Context) {
 }
 
 // 后置回调处理器
-func afterHandler(ctx *gosh.Context) {
+func afterHandler(ctx *Context) {
 	log.Println("执行了后置处理器", ctx.IsAborted())
 }
 
 // 测试回应
 func TestEcho(t *testing.T) {
-	app := gosh.NewEngine()
-	app.GET("/", func(ctx *gosh.Context) error {
+	app := NewEngine()
+	app.GET("/", func(ctx *Context) error {
 		t.Log("Hello Tsing")
 		return nil
 	})
@@ -56,8 +54,8 @@ func TestEcho(t *testing.T) {
 }
 
 func TestStatusCode(t *testing.T) {
-	app := gosh.NewEngine()
-	app.GET("/", func(ctx *gosh.Context) error {
+	app := NewEngine()
+	app.GET("/", func(ctx *Context) error {
 		return ctx.WriteNoContent()
 	})
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -74,23 +72,23 @@ func TestStatusCode(t *testing.T) {
 
 // 测试处理器
 func TestHandlers(t *testing.T) {
-	app := gosh.NewEngine(gosh.Config{
+	app := NewEngine(Config{
 		Recovery:     true,
 		AfterHandler: afterHandler,
 	})
-	app.Use(func(ctx *gosh.Context) error {
+	app.Use(func(ctx *Context) error {
 		t.Log("1 执行了全局中间件")
 		return nil
 	})
-	group := app.Group("/group", func(ctx *gosh.Context) error {
+	group := app.Group("/group", func(ctx *Context) error {
 		t.Log("2 执行了 /group")
 		return nil
 	})
-	group.Use(func(ctx *gosh.Context) error {
+	group.Use(func(ctx *Context) error {
 		t.Log("3 执行了路由组 /group 中间件")
 		return nil
 	})
-	group.GET("/object", func(ctx *gosh.Context) error {
+	group.GET("/object", func(ctx *Context) error {
 		t.Log("4 执行了 /group/object")
 		return nil
 	})
@@ -106,8 +104,8 @@ func TestHandlers(t *testing.T) {
 
 // 测试 PathValue
 func TestPathValue(t *testing.T) {
-	app := gosh.NewEngine()
-	app.GET("/:path/:file", func(ctx *gosh.Context) error {
+	app := NewEngine()
+	app.GET("/:path/:file", func(ctx *Context) error {
 		t.Log("path=", ctx.PathValue("path"))
 		t.Log("file=", ctx.PathValue("file"))
 		return nil
@@ -124,12 +122,12 @@ func TestPathValue(t *testing.T) {
 
 // 测试Context传值
 func TestContextValue(t *testing.T) {
-	app := gosh.NewEngine()
-	app.GET("/", func(ctx *gosh.Context) error {
+	app := NewEngine()
+	app.GET("/", func(ctx *Context) error {
 		// 在ctx中写入参数
 		ctx.SetContextValue("hello", "tsing")
 		return nil
-	}, func(ctx *gosh.Context) error {
+	}, func(ctx *Context) error {
 		t.Log("hello=", ctx.GetContextValue("hello"))
 		return nil
 	})
@@ -145,13 +143,13 @@ func TestContextValue(t *testing.T) {
 
 // 测试中止处理器链
 func TestAbort(t *testing.T) {
-	app := gosh.NewEngine()
+	app := NewEngine()
 	group := app.Group("/group")
-	group.GET("/object", func(ctx *gosh.Context) error {
+	group.GET("/object", func(ctx *Context) error {
 		t.Log("ok")
 		ctx.Abort()
 		return nil
-	}, func(ctx *gosh.Context) error {
+	}, func(ctx *Context) error {
 		t.Error("中止失败")
 		return nil
 	})
@@ -167,8 +165,8 @@ func TestAbort(t *testing.T) {
 
 // 测试QueryValue
 func TestQueryParams(t *testing.T) {
-	app := gosh.NewEngine()
-	app.GET("/", func(ctx *gosh.Context) error {
+	app := NewEngine()
+	app.GET("/", func(ctx *Context) error {
 		t.Log("id=", ctx.QueryValue("id"))
 		return nil
 	})
@@ -184,8 +182,8 @@ func TestQueryParams(t *testing.T) {
 
 // 测试FormValue
 func TestFormValue(t *testing.T) {
-	app := gosh.NewEngine()
-	app.POST("/", func(ctx *gosh.Context) error {
+	app := NewEngine()
+	app.POST("/", func(ctx *Context) error {
 		t.Log("test=", ctx.FormValue("test"))
 		return nil
 	})
@@ -203,7 +201,7 @@ func TestFormValue(t *testing.T) {
 
 // 测试 404 错误
 func TestNotFoundError(t *testing.T) {
-	app := gosh.NewEngine(gosh.Config{
+	app := NewEngine(Config{
 		ErrorHandler: errorHandler,
 	})
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -218,11 +216,11 @@ func TestNotFoundError(t *testing.T) {
 
 // 测试 405 事件
 func TestMethodNotAllowedError(t *testing.T) {
-	app := gosh.NewEngine(gosh.Config{
+	app := NewEngine(Config{
 		HandleMethodNotAllowed: true,
 		ErrorHandler:           errorHandler,
 	})
-	app.POST("/", func(ctx *gosh.Context) error {
+	app.POST("/", func(ctx *Context) error {
 		return nil
 	})
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -237,11 +235,11 @@ func TestMethodNotAllowedError(t *testing.T) {
 
 // 测试CORS
 func TestCORS(t *testing.T) {
-	app := gosh.NewEngine(gosh.Config{
+	app := NewEngine(Config{
 		ErrorHandler:           errorHandler, // 通过错误处理器来实现自动响应OPTIONS请求
 		HandleMethodNotAllowed: true,         // 错误处理器中需要判断 405 状态码
 	})
-	app.GET("/", func(ctx *gosh.Context) error {
+	app.GET("/", func(ctx *Context) error {
 		return nil
 	})
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
@@ -258,7 +256,7 @@ func TestCORS(t *testing.T) {
 var logOutput string
 
 // 前置处理器示例
-func beforeHandler(ctx *gosh.Context) {
+func beforeHandler(ctx *Context) {
 	logOutput += "前置处理器: 处理请求 " + ctx.Request.Method + " " + ctx.Request.URL.Path + "\n"
 	log.Println(logOutput)
 }
@@ -266,12 +264,12 @@ func beforeHandler(ctx *gosh.Context) {
 // 测试前置处理器
 func TestBeforeHandler(t *testing.T) {
 	// 创建引擎实例并设置前置处理器
-	engine := gosh.NewEngine(gosh.Config{
+	engine := NewEngine(Config{
 		BeforeHandler: beforeHandler,
 	})
 
 	// 设置路由
-	engine.GET("/", func(ctx *gosh.Context) error {
+	engine.GET("/", func(ctx *Context) error {
 		ctx.ResponseWriter.Write([]byte("Hello, World!"))
 		return nil
 	})

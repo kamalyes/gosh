@@ -2,7 +2,7 @@
  * @Author: kamalyes 501893067@qq.com
  * @Date: 2024-11-15 08:59:07
  * @LastEditors: kamalyes 501893067@qq.com
- * @LastEditTime: 2024-11-17 02:07:47
+ * @LastEditTime: 2025-01-20 09:24:36
  * @FilePath: \gosh\static.go
  * @Description:
  *
@@ -48,8 +48,8 @@ func (group *RouterGroup) Static(relativePath, localPath string, listDir bool) {
 }
 
 // validatePaths 检查相对路径和本地路径的有效性，并返回本地路径的绝对路径。
-// relativePath: 路由的相对路径（用于验证是否包含非法字符）。
-// localPath: 本地文件系统中的路径（将转换为绝对路径）。
+// - relativePath: 路由的相对路径（用于验证是否包含非法字符）。
+// - localPath: 本地文件系统中的路径（将转换为绝对路径）。
 // 返回绝对路径和可能的错误。
 func validatePaths(relativePath, localPath string) (absLocalPath string, err error) {
 	// 检查相对路径是否包含非法字符

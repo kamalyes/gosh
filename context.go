@@ -496,9 +496,9 @@ func (ctx *Context) WriteRedirect(code int, url string) error {
 	if code < 300 || code > 308 { // 检查重定向状态码
 		return errorsx.ErrInvalidRedirectCode // 返回无效状态码错误
 	}
-	ctx.Status = code                                              // 设置状态码
-	ctx.ResponseWriter.Header().Set(constants.HeaderLocation, url) // 设置 Location 头部
-	ctx.ResponseWriter.WriteHeader(code)                           // 写入响应状态
+	ctx.Status = code                                                 // 设置状态码
+	ctx.ResponseWriter.Header().Set(constants.HeaderLocationKey, url) // 设置 Location 头部
+	ctx.ResponseWriter.WriteHeader(code)                              // 写入响应状态
 	return nil
 }
 
@@ -547,12 +547,12 @@ func (ctx *Context) UserAgent() string {
 
 // 设置 Content-Type 头部
 func (ctx *Context) setContentType(contentType string) {
-	ctx.ResponseWriter.Header().Set(constants.HeaderContentType, contentType) // 设置响应的 Content-Type
+	ctx.ResponseWriter.Header().Set(constants.HeaderContentTypeKey, contentType) // 设置响应的 Content-Type
 }
 
 // 设置 HeaderContentLength 头部
 func (ctx *Context) setHeaderContentLength(len string) {
-	ctx.ResponseWriter.Header().Set(constants.HeaderContentLength, len) // 设置响应的 Content-Length
+	ctx.ResponseWriter.Header().Set(constants.HeaderContentLengthKey, len) // 设置响应的 Content-Length
 }
 
 // SetStatus 设置响应的状态码

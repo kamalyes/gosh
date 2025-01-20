@@ -2,32 +2,31 @@
  * @Author: kamalyes 501893067@qq.com
  * @Date: 2024-11-16 17:30:00
  * @LastEditors: kamalyes 501893067@qq.com
- * @LastEditTime: 2024-11-17 13:26:42
- * @FilePath: \gosh\tests\zap_test.go
+ * @LastEditTime: 2025-01-20 17:27:10
+ * @FilePath: \gosh\zap_test.go
  * @Description: 测试 Zap 功能
  */
-package tests
+package gosh
 
 import (
 	"errors"
 	"testing"
 
 	"github.com/kamalyes/go-config/pkg/zap"
-	"github.com/kamalyes/gosh"
 	"github.com/stretchr/testify/assert"
 )
 
 // 初始化 Logger 的辅助函数
-func initLogger(t *testing.T) (*gosh.Logger, zap.Zap) {
-	kmZap := gosh.DefaultKmZipConfig() // 创建一个默认的 kmZap 配置
-	ctx := gosh.Context{
-		Engine: &gosh.Engine{
-			Config: gosh.Config{
+func initLogger(t *testing.T) (*Logger, zap.Zap) {
+	kmZap := DefaultKmZipConfig() // 创建一个默认的 kmZap 配置
+	ctx := Context{
+		Engine: &Engine{
+			Config: Config{
 				AppName: "testate",
 			},
 		},
 	}
-	logger, err := gosh.NewLogger(ctx, kmZap) // 初始化一个新的 Logger 实例
+	logger, err := NewLogger(ctx, kmZap) // 初始化一个新的 Logger 实例
 	assert.NoError(t, err)                    // 断言没有错误发生
 	assert.NotNil(t, logger)                  // 断言 logger 不为 nil
 	return logger, kmZap
@@ -73,8 +72,8 @@ func TestLogRecovery(t *testing.T) {
 
 // TestWriteSyncer 测试 WriteSyncer 方法
 func TestWriteSyncer(t *testing.T) {
-	kmZap := gosh.DefaultKmZipConfig()
+	kmZap := DefaultKmZipConfig()
 	filePath := "test.log"                           // 测试日志文件路径
-	writeSyncer := gosh.WriteSyncer(filePath, kmZap) // 创建 WriteSyncer 实例
+	writeSyncer := WriteSyncer(filePath, kmZap) // 创建 WriteSyncer 实例
 	assert.NotNil(t, writeSyncer)                    // 断言 WriteSyncer 不为 nil
 }

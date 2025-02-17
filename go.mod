@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/go-playground/universal-translator v0.18.1
-	github.com/go-playground/validator/v10 v10.24.0
+	github.com/go-playground/validator/v10 v10.25.0
 	github.com/kamalyes/go-config v0.5.2
 	github.com/kamalyes/go-toolbox v0.11.31
 	github.com/stretchr/testify v1.10.0
